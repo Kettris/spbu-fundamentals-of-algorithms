@@ -55,16 +55,20 @@ class LossyCompression:
     def __init__(self) -> None:
         self.huffman_coding = HuffmanCoding()
 
-    def compress(self, time_series: NDArrayFloat) -> str:
-        normalized_values = (time_series - time_series.min()) / (time_series.max() - time_series.min())
+    def compress(self, time_series: NDArrayFloat) -> tuple[str, float, float]:
+        min_val = time_series.min()
+        max_val = time_series.max()
+        normalized_values = (time_series - min_val) / (max_val - min_val)
         quantized_values = np.round(normalized_values * 255).astype(int)
-        return self.huffman_coding.encode(list(quantized_values))
+        huffman_bits = self.huffman_coding.encode(list(quantized_values))
+        
+        return huffman_bits, min_val, max_val
 
-    def decompress(self, bits: str) -> NDArrayFloat:
+    def decompress(self, compressed_data: tuple[str, float, float]) -> NDArrayFloat:
+        bits, min_val, max_val = compressed_data
         decoded_quantized_values = self.huffman_coding.decode(bits)
-        denormalized_values = np.array(decoded_quantized_values) / 255 * (time_series.max() - time_series.min()) + time_series.min()
+        denormalized_values = np.array(decoded_quantized_values) / 255 * (max_val - min_val) + min_val
         return denormalized_values
-    # max знач для 8 бит
 
 
 if __name__ == "__main__":
