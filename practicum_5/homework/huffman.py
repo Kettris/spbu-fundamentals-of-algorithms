@@ -17,17 +17,17 @@ class HuffmanCoding:
         self.tree_root = None
 
     def encode(self, sequence: list[Any]) -> str:
-        frequencies = collections.Counter(sequence) #подсчет частоты символов
-        heap = [[weight, [symbol, ""]] for symbol, weight in frequencies.items()] #
-        heapq.heapify(heap) #созжает кучу min heap
+        frequencies = collections.Counter(sequence)
+        heap = [[weight, [symbol, ""]] for symbol, weight in frequencies.items()]
+        heapq.heapify(heap)
 
-        while len(heap) > 1: #обьеденяет два узла с наименьш частотами и возращает обьедененый
+        while len(heap) > 1:
             lo = heapq.heappop(heap)
             hi = heapq.heappop(heap)
             for pair in lo[1:]:
-                pair[1] = '0' + pair[1] #к 1 эл 
+                pair[1] = '0' + pair[1]
             for pair in hi[1:]:
-                pair[1] = '1' + pair[1] # к 2 эл
+                pair[1] = '1' + pair[1]
             heapq.heappush(heap, [lo[0] + hi[0]] + lo[1:] + hi[1:])
         
         self.tree_root = heap[0]
@@ -50,7 +50,6 @@ class HuffmanCoding:
                 current_node = next_nodes
         return result
 
-
 class LossyCompression:
     def __init__(self) -> None:
         self.huffman_coding = HuffmanCoding()
@@ -69,7 +68,6 @@ class LossyCompression:
         decoded_quantized_values = self.huffman_coding.decode(bits)
         denormalized_values = np.array(decoded_quantized_values) / 255 * (max_val - min_val) + min_val
         return denormalized_values
-
 
 if __name__ == "__main__":
     ts = np.loadtxt("ts_homework_practicum_5.txt")
