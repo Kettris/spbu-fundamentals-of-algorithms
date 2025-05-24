@@ -2,6 +2,7 @@ from pathlib import Path
 import heapq
 from typing import Any
 from abc import ABC, abstractmethod
+import collections
 
 import networkx as nx
 import numpy as np
@@ -16,17 +17,17 @@ class HuffmanCoding:
         self.tree_root = None
 
     def encode(self, sequence: list[Any]) -> str:
-        frequencies = collections.Counter(sequence)
-        heap = [[weight, [symbol, ""]] for symbol, weight in frequencies.items()]
-        heapq.heapify(heap)
+        frequencies = collections.Counter(sequence) #подсчет частоты символов
+        heap = [[weight, [symbol, ""]] for symbol, weight in frequencies.items()] #
+        heapq.heapify(heap) #созжает кучу min heap
 
-        while len(heap) > 1:
+        while len(heap) > 1: #обьеденяет два узла с наименьш частотами и возращает обьедененый
             lo = heapq.heappop(heap)
             hi = heapq.heappop(heap)
             for pair in lo[1:]:
-                pair[1] = '0' + pair[1]
+                pair[1] = '0' + pair[1] #к 1 эл 
             for pair in hi[1:]:
-                pair[1] = '1' + pair[1]
+                pair[1] = '1' + pair[1] # к 2 эл
             heapq.heappush(heap, [lo[0] + hi[0]] + lo[1:] + hi[1:])
         
         self.tree_root = heap[0]
@@ -63,6 +64,7 @@ class LossyCompression:
         decoded_quantized_values = self.huffman_coding.decode(bits)
         denormalized_values = np.array(decoded_quantized_values) / 255 * (time_series.max() - time_series.min()) + time_series.min()
         return denormalized_values
+    # max знач для 8 бит
 
 
 if __name__ == "__main__":
