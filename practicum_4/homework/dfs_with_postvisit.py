@@ -12,12 +12,21 @@ from src.common import AnyNxGraph
 
 class DfsViaLifoQueueWithPostvisit(GraphTraversal):
     def run(self, node: Any) -> None:
+        stack = [node]  #инициализация стека с начальной вершиной
+        visited = set()  #для отслеживания посещенных вершин
 
-        ##########################
-        ### PUT YOUR CODE HERE ###
-        #########################
+        while stack:
+            current_vertex = stack.pop()  #забор вершины из стека
 
-        pass
+            if current_vertex not in visited:
+                self.previsit(current_vertex)  #вызыв previsit
+                visited.add(current_vertex)  #отмечаем вершину как посещенную
+
+                for neighbor in reversed(list(self.graph.neighbors(current_vertex))):
+                    if neighbor not in visited:
+                        stack.append(neighbor)
+
+                self.postvisit(current_vertex)  #вызываем метод postvisit
 
 
 class DfsViaLifoQueueWithPrinting(DfsViaLifoQueueWithPostvisit):
@@ -29,7 +38,7 @@ class DfsViaLifoQueueWithPrinting(DfsViaLifoQueueWithPostvisit):
 
 
 if __name__ == "__main__":
-    # Load and plot the graph
+    #загрузка графа из файла и его обработка
     G = nx.read_edgelist(
         Path("practicum_4") / "simple_graph_10_nodes.edgelist",
         create_using=nx.Graph
@@ -37,5 +46,4 @@ if __name__ == "__main__":
     # plot_graph(G)
 
     dfs = DfsViaLifoQueueWithPrinting(G)
-    dfs.run(node="0")
-
+    dfs.run(node="0")  #запуск обхода с начальной вершиной "0"
