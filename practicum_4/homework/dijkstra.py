@@ -4,45 +4,55 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 import networkx as nx
-import heapq
 
-from practicum_4.dfs import GraphTraversal
+from practicum_4.dfs import GraphTraversal 
 from src.plotting.graphs import plot_graph
 from src.common import AnyNxGraph
 
 
 class DijkstraAlgorithm(GraphTraversal):
     def __init__(self, G: AnyNxGraph) -> None:
-        self.shortest_paths: dict[Any, list[Any]] = {} #хранит кратчайшие пути
+        self.shortest_paths: dict[Any, list[Any]] = {}
         super().__init__(G)
 
     def previsit(self, node: Any, **params) -> None:
-        self.shortest_paths[node] = params["path"] #кратч путь к shortest_paths
+        """List of params:
+        * path: list[Any] (path from the initial node to the given node)
+        """
+        self.shortest_paths[node] = params["path"]
 
     def postvisit(self, node: Any, **params) -> None:
         pass
 
-    def run(self, start_vertex: Any) -> dict[Any, float]:
-        distances = {vertex: float('inf') for vertex in self.graph} #хранит растояние до всех вершин
-        distances[start_vertex] = 0
-        priority_queue = [(0, start_vertex)]
-        self.shortest_paths[start_vertex] = [start_vertex]
+    def run(self, node: Any) -> None:
+        distances = {node: float('inf') for node in self.G.nodes()}
+        distances[node] = 0
+        predecessors = {node: None}
+        unvisited = set(self.G.nodes()) 
 
-        while priority_queue: 
-            current_distance, current_vertex = heapq.heappop(priority_queue)
-
-            if current_distance > distances[current_vertex]: #узел с наим эл
-                continue 
-            for neighbor in self.graph[current_vertex]: #если при проверке вершина устарела перезаписыв
-                weight = self.graph[current_vertex][neighbor].get('weight', 1) #по соседям
-                distance = current_distance + weight #растояние до соседа
-
-                if distance < distances[neighbor]: #проверк нов растояния что кротчайший
-                    distances[neighbor] = distance
-                    heapq.heappush(priority_queue, (distance, neighbor))
-                    self.shortest_paths[neighbor] = self.shortest_paths[current_vertex] + [neighbor]
-
-        return distances #обнов кратч путей
+        while unvisited:
+            current_node = min(unvisited, key=lambda x: distances[x])
+            
+            unvisited.remove(current_node)
+            
+            for neighbor in self.G.neighbors(current_node):
+                if neighbor not in unvisited:
+                    continue
+                
+                edge_weight = self.G[current_node][neighbor].get('weight', 1)
+                alternative_distance = distances[current_node] + edge_weight
+                if alternative_distance < distances[neighbor]:
+                    distances[neighbor] = alternative_distance
+                    predecessors[neighbor] = current_node
+        
+        # кратчайшие пути
+        for node in self.G.nodes():
+            path = []
+            current = node
+            while current is not None:
+                path.insert(0, current)
+                current = predecessors.get(current)
+            self.previsit(node, path=path)
 
 if __name__ == "__main__":
     G = nx.read_edgelist(

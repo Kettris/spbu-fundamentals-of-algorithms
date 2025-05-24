@@ -10,27 +10,25 @@ from src.plotting.graphs import plot_graph
 from src.common import AnyNxGraph
 
 
-class DfsViaLifoQueueWithPostvisit(GraphTraversal): # обход графа
+class DfsViaLifoQueueWithPostvisit(GraphTraversal):
+    def __init__(self, G: GraphTraversal):
+        super().__init__(G)
+        
     def run(self, node: Any) -> None:
-        stack = [(node, False)]
+        stack = deque([node])
         visited = set()
 
         while stack:
-            current_vertex, processed = stack.pop()
-            if processed:
-                self.postvisit(current_vertex)
-                continue
-            if current_vertex in visited:
-                continue
+            current_node = stack.pop()
+            if current_node not in visited:
+                visited.add(current_node)
+                self.previsit(current_node)
+
+                for neighbor in self.G.neighbors(current_node):
+                    if neighbor not in visited:
+                        stack.append(neighbor)
                 
-            self.previsit(current_vertex)
-            
-            visited.add(current_vertex)
-            stack.append((current_vertex, True))
-            
-            for neighbor in reversed(list(self.graph.neighbors(current_vertex))):
-                if neighbor not in visited:
-                    stack.append((neighbor, False))
+                self.postvisit(current_node)
 
 
 class DfsViaLifoQueueWithPrinting(DfsViaLifoQueueWithPostvisit):
@@ -42,6 +40,7 @@ class DfsViaLifoQueueWithPrinting(DfsViaLifoQueueWithPostvisit):
 
 
 if __name__ == "__main__":
+    # Load and plot the graph
     G = nx.read_edgelist(
         Path("practicum_4") / "simple_graph_10_nodes.edgelist",
         create_using=nx.Graph
